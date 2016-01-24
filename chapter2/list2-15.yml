@@ -1,0 +1,7 @@
+---
+- hosts: all
+  vars_files:
+    - extra_vars.yml
+  tasks:
+    - debug: msg={{ key1 }}:{{ key2 }}
+

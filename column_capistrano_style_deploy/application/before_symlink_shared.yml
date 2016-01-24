@@ -1,0 +1,4 @@
+---
+- name: Application | Create shared paths
+  file: state=directory path={{ ansistrano_deploy_to }}/shared/{{ item }} mode=0777
+  with_items: ansistrano_shared_paths

@@ -1,0 +1,15 @@
+{% for host in virtual_hosts %}
+<VirtualHost *:{{ host.port }}>
+    ServerName {{ host.fqdn }}
+    DocumentRoot /var/www/html/{{ host.fqdn }}/
+    ErrorLog logs/{{ host.fqdn }}-error_log
+    CustomLog logs/{{ host.fqdn }}-access_log common
+{% if host.allow_override %}
+
+    <Directory /var/www/html/{{ host.fqdn }}/>
+        Options FollowSymLinks
+        AllowOverride All
+    </Directory>
+{% endif %}
+</VirtualHost>
+{% endfor %}

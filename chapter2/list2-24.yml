@@ -1,0 +1,9 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: Apache設定ファイルを転送
+      copy: src=files/{{ item.src }} dest={{ item.dest }}
+      with_items:
+        - { src: httpd.conf, dest: /etc/httpd/conf/httpd.conf }
+        - { src: vhosts.conf, dest: /etc/httpd/conf.d/vhosts.conf }

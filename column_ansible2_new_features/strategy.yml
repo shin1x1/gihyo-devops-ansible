@@ -1,0 +1,19 @@
+---
+- hosts: vagrant
+  strategy: free
+  tasks:
+    - name: 日時を取得
+      command: date
+      register: now
+
+    - debug: var=now.stdout
+
+    - name: sleep
+      command: sleep {{ sleep }}
+
+    - name: 日時を取得
+      command: date
+      register: now
+
+    - debug: var=now.stdout
+

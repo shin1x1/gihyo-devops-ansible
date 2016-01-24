@@ -1,0 +1,11 @@
+---
+- hosts: vm1
+  vars:
+    dictionary:
+      key1:
+        key11: value10
+  tasks:
+    - debug: var=item
+      with_items:
+        - "{{ dictionary.key1.key11 }}"
+        - "{{ dictionary['key1']['key11'] }}"

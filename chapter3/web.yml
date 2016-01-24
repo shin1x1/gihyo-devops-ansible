@@ -1,0 +1,97 @@
+---
+- hosts: web
+  become: yes
+  tasks:
+    # Apache
+    - name: Apacheをインストール # （1）
+      yum: name=httpd state=present
+      tags:
+        - apache
+
+    - name: httpd.confテンプレートを転送 # （2）
+      template:
+        src=files/apache/httpd.conf.j2
+        dest=/etc/httpd/conf/httpd.conf
+        owner=root
+        group=root
+        mode=0644
+      tags:
+        - apache
+      notify:
+        - Apacheを再起動
+
+    - name: vhosts.confテンプレートを転送 # （3）
+      template:
+        src=files/apache/vhosts.conf.j2
+        dest=/etc/httpd/conf.d/vhosts.conf
+        owner=root
+        group=root
+        mode=0644
+      tags:
+        - apache
+      notify:
+        - Apacheを再起動
+
+    - name: Apacheを起動、自動起動を有効化 # （4）
+      service: name=httpd state=started enabled=yes
+      tags:
+          - apache
+
+    # PHP
+    - name: EPELリポジトリをインストール # （1）
+      yum: name=epel-release state=present
+      tags:
+        - php
+
+    - name: Remiリポジトリがインストール済か # （2）
+      shell: rpm -q remi-release
+      register: remi_release_status
+      failed_when: False
+      changed_when: False
+      tags:
+        - php
+
+    - name: Remiリポジトリをインストール # （3）
+      yum: name="http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+      when: remi_release_status|failed
+      tags:
+        - php
+
+    - name: PHP 7.0をインストール # （4）
+      yum: name={{ item }} state=present enablerepo=remi-php70
+      with_items:
+        - php
+        - php-cli
+        - php-process
+        - php-pdo
+        - php-pgsql
+        - php-mbstring
+        - php-mcrypt
+        - php-devel
+        - php-common
+        - php-pear
+        - php-opcache
+        - php-json
+        - php-pecl-memcached
+        - php-pecl-zip
+      notify:
+        - Apacheを再起動
+      tags:
+        - php
+
+    - name: カスタムphp.iniを転送 # （5）
+      copy: src=files/php/zzmyphp.ini dest=/etc/php.d/zzmyphp.ini
+      notify:
+        - Apacheを再起動
+      tags:
+        - php
+
+    - name: composer.pharインストール # （6）
+      shell: curl -sS https://getcomposer.org/installer
+              | php -- --install-dir=/usr/bin --filename=composer creates=/usr/bin/composer
+      tags:
+        - php
+
+  handlers:
+    - name: Apacheを再起動
+      service: name=httpd state=restarted

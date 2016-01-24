@@ -1,0 +1,11 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: httpdをインストール（yum）
+      yum: name=httpd state=latest
+      when: ansible_os_family == "RedHat"
+
+    - name: apache2をインストール（apt-get）
+      apt: name=apache2-mpm-prefork state=latest
+      when: ansible_os_family == "Debian"

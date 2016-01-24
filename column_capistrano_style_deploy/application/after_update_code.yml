@@ -1,0 +1,9 @@
+---
+- name: Application | Composerで依存解決 # （2）
+  composer:
+    command=install
+    working_dir={{ ansistrano_release_path.stdout }}
+    no_dev={{ not deploy_laravel_debug }}
+
+- name: Application | .envテンプレートを転送 # （3）
+  template: src={{ playbook_dir }}/application/templates/.env.j2 dest={{ ansistrano_release_path.stdout }}/.env

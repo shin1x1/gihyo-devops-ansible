@@ -1,0 +1,14 @@
+---
+- hosts: vm1
+  become: yes
+  vars:
+    virtual_hosts:
+      - { port: 80, fqdn: site1.example.com, allow_override: True }
+      - { port: 80, fqdn: site2.example.com, allow_override: False }
+  tasks:
+    - name: virtual_hosts.confを設置
+      template:
+        src=files/virtual_hosts.conf.j2
+        dest=/etc/httpd/conf.d/virtual_hosts.conf
+        owner=root
+        group=root mode=0644

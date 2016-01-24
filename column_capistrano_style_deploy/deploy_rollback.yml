@@ -1,0 +1,7 @@
+---
+- hosts: web
+  vars:
+    ansistrano_deploy_to: /opt/application
+  roles:
+    - carlosbuenosvinos.ansistrano-rollback
+

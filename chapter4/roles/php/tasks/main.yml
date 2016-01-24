@@ -1,0 +1,55 @@
+---
+- name: EPELリポジトリをインストール # （1）
+  yum: name=epel-release state=present
+  tags:
+    - php
+
+- name: Remiリポジトリがインストール済か # （2）
+  shell: rpm -q remi-release
+  register: remi_release_status
+  failed_when: False
+  changed_when: False
+  tags:
+    - php
+
+- name: Remiリポジトリをインストール # （3）
+  yum: name="http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+  when: remi_release_status|failed
+  tags:
+    - php
+
+- name: PHP 7.0をインストール # （4）
+  yum: name={{ item }} state=present enablerepo=remi-php70
+  with_items:
+    - php
+    - php-cli
+    - php-process
+    - php-pdo
+    - php-pgsql
+    - php-mbstring
+    - php-mcrypt
+    - php-devel
+    - php-common
+    - php-pear
+    - php-opcache
+    - php-json
+    - php-pecl-memcached
+    - php-pecl-zip
+  notify:
+    - Apacheを再起動
+  tags:
+    - php
+
+- name: カスタムphp.iniを転送 # （5）
+  copy: src=zzmyphp.ini dest=/etc/php.d/zzmyphp.ini
+  notify:
+    - Apacheを再起動
+  tags:
+    - php
+
+- name: composer.pharインストール # （6）
+  shell: curl -sS https://getcomposer.org/installer
+          | php -- --install-dir=/usr/bin --filename=composer creates=/usr/bin/composer
+  tags:
+    - php
+

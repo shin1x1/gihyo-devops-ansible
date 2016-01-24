@@ -1,0 +1,13 @@
+---
+- name: httpd.confテンプレートを転送 # （1）
+  template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf owner=root group=root mode=0644
+  notify:
+    - Apacheを再起動
+
+- name: vhosts.confテンプレートを転送 #（2）
+  template: src=vhosts.conf.j2 dest=/etc/httpd/conf.d/vhosts.conf owner=root group=root mode=0644
+  notify:
+    - Apacheを再起動
+
+- name: Apacheを起動、自動起動を有効化
+  service: name=httpd state=started enabled=yes

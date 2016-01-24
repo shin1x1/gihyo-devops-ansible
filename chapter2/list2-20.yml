@@ -1,0 +1,17 @@
+---
+- hosts: vm1
+  vars:
+    list:
+      - head
+      - value1
+      - tail
+  tasks:
+    - debug: var=item
+      with_items:
+        - "{{ list[0] }}"
+        - "{{ list[-1] }}"
+        - "{{ list[-2] }}"
+        - "{{ list[0:2] }}"
+        - "{{ list[:2] }}"
+        - "{{ list[1:] }}"
+

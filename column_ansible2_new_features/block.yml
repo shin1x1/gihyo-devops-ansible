@@ -1,0 +1,16 @@
+---
+- hosts: vm1
+  tasks:
+    - block:
+      - name: Install packages
+        yum: name={{ item }} state=present
+        with_items:
+          - httpd
+          - php
+
+      - name: Ensure started and eabled httpd
+        service: name=httpd state=started enabled=yes
+
+      become: yes
+      tags:
+        - httpd

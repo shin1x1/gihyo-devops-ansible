@@ -1,0 +1,7 @@
+---
+- hosts: localhost
+  gather_facts: no
+  vars_files:
+    - secret.yml
+  tasks:
+    - debug: msg={{ api_key }}

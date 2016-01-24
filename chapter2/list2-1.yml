@@ -1,0 +1,9 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: Apacheをインストール
+      yum: name=httpd state=latest
+
+    - name: Apacheを起動する
+      service: name=httpd state=started enabled=yes

@@ -1,0 +1,3 @@
+---
+- name: Apacheをインストール
+  yum: name=httpd state=present

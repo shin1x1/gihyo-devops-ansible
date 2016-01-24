@@ -1,0 +1,11 @@
+---
+- hosts: vm1
+  tasks:
+    - name: 現在日を取得
+      shell: date +%Y%m%d
+      register: date
+
+    - debug: var=date
+
+    - name: 現在日のディレクトリを作成
+      file: path=/tmp/{{ date.stdout }} state=directory owner=vagrant group=vagrant mode=0755

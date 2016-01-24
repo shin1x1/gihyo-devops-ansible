@@ -1,0 +1,16 @@
+---
+- name: ロケール設定
+  command: localectl set-locale {{ base_locale }}
+
+- name: タイムゾーン設定
+  command: timedatectl set-timezone {{ base_timezone }}
+
+- name: 基本パッケージをインストール
+  yum: name={{ item }} state=present
+  with_items:
+    - vim
+    - git
+    - ntp
+
+- name: ntpdを起動、自動起動の有効化
+  service: name=ntpd state=started enabled=yes

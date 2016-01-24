@@ -1,0 +1,24 @@
+---
+ansible_ssh_user: vagrant
+ansible_ssh_private_key_file: ~/.vagrant.d/insecure_private_key
+is_development: True
+
+# for apache
+#apache_document_root: /vagrant/src/public
+apache_document_root: /opt/application/current/public
+apache_server_name: gihyo-devops-ansible3.dev
+
+# for laravel and apache
+#deploy_laravel_root: /vagrant/src
+deploy_laravel_root: /opt/application
+deploy_laravel_env: local
+deploy_laravel_debug: True
+deploy_laravel_app_key: seITT4CLYjZvTiwlR2aobMKqgvYn9snP # 要変更
+
+# for laravel and postgresql
+db_connection: pgsql
+db_host: "null"
+db_database: app
+db_test_database: app_test
+db_username: vagrant
+db_password: pass

@@ -1,0 +1,14 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.ssh.insert_key = false
+  config.vm.box = "bento/centos-7.1"
+
+  config.vm.define :vm1 do |vm1|
+    vm1.vm.network "private_network", ip: "192.168.34.31"
+  end
+  config.vm.define :vm2 do |vm2|
+    vm2.vm.network "private_network", ip: "192.168.34.32"
+  end
+end

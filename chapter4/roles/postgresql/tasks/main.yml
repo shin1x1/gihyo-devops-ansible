@@ -1,0 +1,60 @@
+---
+- name: PostgreSQLリポジトリがインストール済みか # （1）
+  shell: rpm -q pgdg-centos94
+  register: pgdg_status
+  failed_when: False
+  changed_when: False
+  tags:
+    - postgresql
+
+- name: PostgreSQLリポジトリをインストール # （2）
+  yum: name="http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm"
+  when: pgdg_status|failed
+  tags:
+    - postgresql
+
+- name: PostgreSQLをインストール # （3）
+  yum: name={{ item }} state=present
+  with_items:
+    - postgresql94-server
+    - postgresql94
+    - python-psycopg2
+  tags:
+    - postgresql
+
+- name: PostgreSQLデータベースを初期化 # （4）
+  command: /usr/pgsql-9.4/bin/postgresql94-setup initdb
+  args:
+    creates: /var/lib/pgsql/9.4/data/postgresql.conf
+  tags:
+    - postgresql
+
+- name: pg_hba.confテンプレートを転送 # （5）
+  template: src=pg_hba.conf.j2 dest=/var/lib/pgsql/9.4/data/pg_hba.conf
+  notify:
+    - PostgreSQLを再起動
+  tags:
+    - postgresql
+
+- name: PostgreSQLを起動、自動起動を有効化 # （6）
+  service: name=postgresql-9.4 state=started enabled=yes
+  tags:
+    - postgresql
+
+- name: PostgreSQLユーザを作成 # （7）
+  postgresql_user:
+    name={{ db_username }}
+    password={{ db_password }}
+    role_attr_flags=CREATEDB,NOSUPERUSER
+  become_user: postgres
+  tags:
+    - postgresql
+
+- name: アプリケーションデータベースを作成 # （8）
+  postgresql_db: name={{ item }} owner={{ db_username }} encoding=UTF-8 template=template0
+  become_user: postgres
+  with_items:
+    - "{{ db_database }}"
+    - "{{ db_test_database }}"
+  tags:
+    - postgresql

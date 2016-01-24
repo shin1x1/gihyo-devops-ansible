@@ -1,0 +1,8 @@
+---
+- hosts: vm1
+  connection: local
+  gather_facts: no
+  vars_files:
+    - tasks/tasks.yml
+  roles:
+    - dynamic_include

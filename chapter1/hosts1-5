@@ -1,0 +1,14 @@
+[web]
+vm1
+web[01:03].example.com
+
+[db]
+vm1
+db_[a:b].example.com
+
+[development]
+vm1
+
+[production]
+web[01:03].example.com
+db_[a:b].example.com

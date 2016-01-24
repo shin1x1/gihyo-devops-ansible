@@ -1,0 +1,19 @@
+---
+- hosts: vm1
+  tasks:
+    - name: foo.phpを転送
+      copy: src=files/foo.php dest=/tmp/foo.php
+
+    - name: foo.phpを実行
+      command: php foo.php
+      args:
+        chdir: /tmp
+        creates: "*.txt"
+      tags:
+        - debug
+
+    - name: foo.phpを実行
+      command: php foo.php
+      args:
+        chdir: /tmp
+        creates: done.txt

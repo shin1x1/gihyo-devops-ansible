@@ -1,0 +1,7 @@
+---
+db_connection: pgsql
+db_host: "null"
+db_database: app
+db_test_database: app_test
+db_username: vagrant
+db_password: dummy

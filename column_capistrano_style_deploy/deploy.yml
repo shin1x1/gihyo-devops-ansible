@@ -1,0 +1,22 @@
+---
+- hosts: web
+  vars:
+    ansistrano_deploy_to: /opt/application
+    ansistrano_shared_paths:
+      - storage/app
+      - storage/framework/cache
+      - storage/framework/sessions
+      - storage/framework/views
+      - storage/logs
+    ansistrano_allow_anonymous_stats: no
+    ansistrano_keep_releases: 5
+    ansistrano_deploy_via: git
+    ansistrano_git_repo:
+      https://github.com/shin1x1/gihyo-devops-ansible-app.git
+    ansistrano_after_update_code_tasks_file:
+      "{{ playbook_dir }}/application/after_update_code.yml"
+    ansistrano_after_symlink_tasks_file:
+      "{{ playbook_dir }}/application/after_symlink.yml"
+  roles:
+    - application_directory
+    - carlosbuenosvinos.ansistrano-deploy

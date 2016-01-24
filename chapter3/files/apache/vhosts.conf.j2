@@ -1,0 +1,13 @@
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+    ServerName {{ apache_server_name }}
+    DocumentRoot {{ apache_document_root }}
+
+    ErrorLog logs/{{ apache_server_name }}_error_log
+    CustomLog logs/{{ apache_server_name }}_access_log combined
+</VirtualHost>
+<Directory {{ apache_document_root }}>
+    Require all granted
+    AllowOverride All
+</Directory>

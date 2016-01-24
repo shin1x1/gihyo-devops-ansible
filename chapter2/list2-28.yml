@@ -1,0 +1,18 @@
+---
+- hosts: vm1
+  tasks:
+    - shell: /usr/bin/some_command
+      register: result
+      ignore_errors: True
+
+    - debug: msg="コマンドは失敗しました"
+      when: result|failed
+
+    - debug: msg="状態が変更されました"
+      when: result|changed
+
+    - debug: msg="コマンドは成功しました"
+      when: result|success
+
+    - debug: msg="コマンドはスキップしました"
+      when: result|skipped

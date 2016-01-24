@@ -1,0 +1,9 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: CentOS 6または7のみ実行するタスク
+      yum: name=httpd state=present
+      when:
+        ansible_distribution == "CentOS" and
+        (ansible_distribution_major_version == "6" or ansible_distribution_major_version == "7")

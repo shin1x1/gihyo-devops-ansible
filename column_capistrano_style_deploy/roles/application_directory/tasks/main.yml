@@ -1,0 +1,14 @@
+---
+- name: Create application directory
+  file: path=/opt/application state=directory owner=vagrant mode=755
+  become: yes
+
+- name: Create shared directory
+  file:
+    path={{ ansistrano_deploy_to }}/shared/{{ item }}
+    state=directory
+    mode=777
+  with_items: ansistrano_shared_paths
+
+
+

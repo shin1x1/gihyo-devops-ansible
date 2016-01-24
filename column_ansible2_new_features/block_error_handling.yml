@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - block:
+        - debug: msg=処理開始
+
+        - name: エラー発生
+          command: /bin/false
+
+        - debug: msg=ここは実行されない
+
+      rescue:
+        - debug: msg="[rescue] ブロック"
+
+        - name: resuceブロックでエラー発生
+          command: /bin/false
+
+        - debug: msg="[resuce] ここは実行されない"
+
+      always:
+        - debug: msg="[always] ブロック"
+

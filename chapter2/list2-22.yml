@@ -1,0 +1,4 @@
+---
+- hosts: vm1
+  tasks:
+    - debug: var=ansible_nodename

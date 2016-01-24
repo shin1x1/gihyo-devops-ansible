@@ -1,0 +1,10 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: パッケージをインストール
+      yum: name={{ item }} state=present
+      with_items:
+        - httpd
+        - php
+        - git

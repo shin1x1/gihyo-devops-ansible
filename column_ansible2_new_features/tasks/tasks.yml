@@ -1,0 +1,4 @@
+---
+tasks:
+  - "{{ playbook_dir }}/tasks/task1.yml"
+  - "{{ playbook_dir }}/tasks/task2.yml"

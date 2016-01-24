@@ -1,0 +1,9 @@
+localhost
+
+[vagrant]
+vm1 ansible_ssh_host=192.168.34.31 sleep=5
+vm2 ansible_ssh_host=192.168.34.32 sleep=30
+
+[vagrant:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key

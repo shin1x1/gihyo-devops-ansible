@@ -1,0 +1,27 @@
+---
+- hosts: vm1
+  become: yes
+  tasks:
+    - name: /tmp/fooを作成
+      file: path=/tmp/foo state=touch
+
+    - name: /tmp/fooのstatusを取得
+      stat: path=/tmp/foo
+      register: file_status
+
+    - debug: var=file_status.stat
+
+    - name: /tmp/fooが存在すれば、/tmp/foo1にリネーム
+      command: mv /tmp/foo /tmp/foo1
+      when: file_status.stat.exists
+
+    - name: /tmp/fooを削除
+      file: path=/tmp/foo state=absent
+
+    - name: /tmp/fooのstatusを取得
+      stat: path=/tmp/foo
+      register: file_status
+
+    - name: /tmp/fooが存在すれば、/tmp/foo1にリネーム
+      command: mv /tmp/foo /tmp/foo1
+      when: file_status.stat.exists

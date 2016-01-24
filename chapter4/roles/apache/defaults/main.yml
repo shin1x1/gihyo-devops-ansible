@@ -1,0 +1,4 @@
+---
+is_development: on
+apache_document_root: /vagrant/src/public
+apache_server_name: gihyo-devops-ansible3.dev

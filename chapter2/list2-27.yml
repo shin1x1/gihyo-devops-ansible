@@ -1,0 +1,11 @@
+---
+- hosts: vm1
+  vars:
+    fruits:
+      - Apple
+      - Orange
+      - Maroon
+  tasks:
+    - debug: msg={{ fruits|first }} # （1）Apple
+    - debug: msg={{ fruits|first|lower }} # （2）apple
+    - debug: msg={{ fruits|join(',') }} # （3）Apple, Orange, Maroon

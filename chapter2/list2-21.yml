@@ -1,0 +1,12 @@
+---
+- hosts: vm1
+  vars:
+    string: Hello Japan!
+  tasks:
+    - debug: var=item
+      with_items:
+        - "{{ string[0] }}"
+        - "{{ string[0:5] }}"
+        - "{{ string[-1] }}"
+        - "{{ string[-6:-1] }}"
+        - "{{ string[-6:] }}"

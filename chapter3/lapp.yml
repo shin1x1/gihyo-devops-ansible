@@ -1,0 +1,220 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    base_locale: LANG=ja_JP.UTF-8
+    base_timezone: Asia/Tokyo
+  tasks:
+    - name: ロケール設定
+      command: localectl set-locale {{ base_locale }}
+
+    - name: タイムゾーン設定
+      command: timedatectl set-timezone {{ base_timezone }}
+
+    - name: 基本パッケージをインストール
+      yum: name={{ item }} state=present
+      with_items:
+        - vim
+        - git
+        - ntp
+
+    - name: ntpdを起動、自動起動の有効化
+      service: name=ntpd state=started enabled=yes
+
+    - name: Apacheをインストール # （1）
+      yum: name=httpd state=present
+      tags:
+        - apache
+
+    - name: httpd.confテンプレートを転送 # （2）
+      template:
+        src=files/apache/httpd.conf.j2
+        dest=/etc/httpd/conf/httpd.conf
+        owner=root
+        group=root
+        mode=0644
+      tags:
+        - apache
+      notify:
+        - Apacheを再起動
+
+    - name: vhosts.confテンプレートを転送 # （3）
+      template:
+        src=files/apache/vhosts.conf.j2
+        dest=/etc/httpd/conf.d/vhosts.conf
+        owner=root
+        group=root
+        mode=0644
+      tags:
+        - apache
+      notify:
+        - Apacheを再起動
+
+    - name: Apacheを起動、自動起動を有効化 # （4）
+      service: name=httpd state=started enabled=yes
+      tags:
+          - apache
+
+    - name: EPELリポジトリをインストール # （1）
+      yum: name=epel-release state=present
+      tags:
+        - php
+
+    - name: Remiリポジトリがインストール済か # （2）
+      shell: rpm -q remi-release
+      register: remi_release_status
+      failed_when: False
+      changed_when: False
+      tags:
+        - php
+
+    - name: Remiリポジトリをインストール # （3）
+      yum: name="http://rpms.remirepo.net/enterprise/remi-release-7.rpm"
+      when: remi_release_status|failed
+      tags:
+        - php
+
+    - name: PHP 7.0をインストール # （4）
+      yum: name={{ item }} state=present enablerepo=remi-php70
+      with_items:
+        - php
+        - php-cli
+        - php-process
+        - php-pdo
+        - php-pgsql
+        - php-mbstring
+        - php-mcrypt
+        - php-devel
+        - php-common
+        - php-pear
+        - php-opcache
+        - php-json
+        - php-pecl-memcached
+        - php-pecl-zip
+      notify:
+        - Apacheを再起動
+      tags:
+        - php
+
+    - name: カスタムphp.iniを転送 # （5）
+      copy: src=files/php/zzmyphp.ini dest=/etc/php.d/zzmyphp.ini
+      notify:
+        - Apacheを再起動
+      tags:
+        - php
+
+    - name: composer.pharインストール # （6）
+      shell: curl -sS https://getcomposer.org/installer
+              | php -- --install-dir=/usr/bin --filename=composer creates=/usr/bin/composer
+      tags:
+        - php
+
+    - name: PostgreSQLリポジトリがインストール済みか # （1）
+      shell: rpm -q pgdg-centos94
+      register: pgdg_status
+      failed_when: False
+      changed_when: False
+      tags:
+        - postgresql
+
+    - name: PostgreSQLリポジトリをインストール # （2）
+      yum: name="http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm"
+      when: pgdg_status|failed
+      tags:
+        - postgresql
+
+    - name: PostgreSQLをインストール # （3）
+      yum: name={{ item }} state=present
+      with_items:
+        - postgresql94-server
+        - postgresql94
+        - python-psycopg2
+      tags:
+        - postgresql
+
+    - name: PostgreSQLデータベースを初期化 # （4）
+      command: /usr/pgsql-9.4/bin/postgresql94-setup initdb
+      args:
+        creates: /var/lib/pgsql/9.4/data/postgresql.conf
+      tags:
+        - postgresql
+
+    - name: pg_hba.confテンプレートを転送 # （5）
+      template: src=files/postgresql/pg_hba.conf.j2 dest=/var/lib/pgsql/9.4/data/pg_hba.conf
+      notify:
+        - PostgreSQLを再起動
+      tags:
+        - postgresql
+
+    - name: PostgreSQLを起動、自動起動を有効化 # （6）
+      service: name=postgresql-9.4 state=started enabled=yes
+      tags:
+        - postgresql
+
+    - name: PostgreSQLユーザを作成 # （7）
+      postgresql_user:
+        name={{ db_username }}
+        password={{ db_password }}
+        role_attr_flags=CREATEDB,NOSUPERUSER
+      become_user: postgres
+      tags:
+        - postgresql
+
+    - name: アプリケーションデータベースを作成 # （8）
+      postgresql_db: name={{ item }} owner={{ db_username }} encoding=UTF-8 template=template0
+      become_user: postgres
+      with_items:
+        - "{{ db_database }}"
+        - "{{ db_test_database }}"
+      tags:
+        - postgresql
+
+    - name: アプリケーションのコードをデプロイ # （1）
+      git:
+        repo=https://github.com/shin1x1/gihyo-devops-ansible-app.git
+        dest={{ deploy_laravel_root }}
+        accept_hostkey=True
+      tags:
+        - deploy
+
+    - name: Composerで依存解決 # （2）
+      composer:
+        command=install
+        working_dir={{ deploy_laravel_root }}
+        no_dev={{ not deploy_laravel_debug }}
+      tags:
+        - deploy
+
+    - name: .envテンプレートを転送 # （3）
+      template: src=files/deploy/.env.j2 dest={{ deploy_laravel_root }}/.env
+      tags:
+        - deploy
+
+    - name: データベースのマイグレーション # （4）
+      shell: php artisan migrate --env {{ deploy_laravel_env }} --force
+      args:
+        chdir: "{{ deploy_laravel_root }}"
+      when: deploy_laravel_debug
+      tags:
+        - deploy
+
+    - name: サンプルデータを登録 # （5）
+      shell: php artisan db:seed --env {{ deploy_laravel_env }} --force
+      args:
+        chdir: "{{ deploy_laravel_root }}"
+      when: deploy_laravel_debug
+      tags:
+        - deploy
+
+    - name: Laravelを最適化 # （6）
+      shell: php artisan optimize chdir={{ deploy_laravel_root }}
+      when: not deploy_laravel_debug
+      tags:
+        - deploy
+
+  handlers:
+    - name: Apacheを再起動
+      service: name=httpd state=restarted
+
+    - name: PostgreSQLを再起動
+      service: name=postgresql-9.4 state=restarted

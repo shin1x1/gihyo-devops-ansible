@@ -1,0 +1,4 @@
+---
+- name: Include tasks
+  include: "{{ item }}"
+  with_items: tasks
